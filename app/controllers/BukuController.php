@@ -1,71 +1,89 @@
 <?php
-class BukuController
-{
-    public function __construct(private Buku $model) {}
+class BukuController {
+    private $model;
 
-    public function index(): void
-    {
-        $buku = $this->model->getAll();
+    public function __construct($model) {
+        $this->model = $model;
+    }
+
+    // Read: Menampilkan daftar buku
+    public function index() {
+        $books = $this->model->getAll();
         require __DIR__ . '/../views/buku/index.php';
     }
 
-    public function create(): void
-    {
+    // Form Tambah
+    public function create() {
         require __DIR__ . '/../views/buku/create.php';
     }
 
-    public function store(): void
-    {
-        $data = $this->validateInput($_POST);
-        $this->model->insert($data);
-        header('Location: index.php?page=buku');
-        exit;
+    // Create & Validasi Backend
+    public function store() {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            // Validasi backend: pastikan field tidak kosong
+            if (empty($_POST['isbn']) || empty($_POST['judul']) || empty($_POST['penulis']) || empty($_POST['penerbit']) || empty($_POST['tahun_terbit'])) {
+                exit('Semua field wajib diisi!');
+            }
+
+            $data = [
+                'isbn'         => $_POST['isbn'],
+                'judul'        => $_POST['judul'],
+                'penulis'      => $_POST['penulis'],
+                'penerbit'     => $_POST['penerbit'],
+                'tahun_terbit' => $_POST['tahun_terbit']
+            ];
+
+            $this->model->create($data);
+            header('Location: index.php?page=buku');
+            exit;
+        }
     }
 
-    public function edit(): void
-    {
-        $id = (int) ($_GET['id'] ?? 0);
-        $buku = $this->model->findById($id);
-
-        if (!$buku) {
-            http_response_code(404);
-            exit('Data buku tidak ditemukan.');
+    // Form Edit
+    public function edit() {
+        $id = $_GET['id'] ?? null;
+        if (!$id) {
+            header('Location: index.php?page=buku');
+            exit;
         }
-
+        $buku = $this->model->getById($id);
         require __DIR__ . '/../views/buku/edit.php';
     }
 
-    public function update(): void
-    {
-        $id = (int) ($_POST['id'] ?? 0);
-        $data = $this->validateInput($_POST);
-        $this->model->update($id, $data);
-        header('Location: index.php?page=buku');
-        exit;
-    }
+    // Update & Validasi Backend
+    public function update() {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $id = $_POST['id'] ?? null;
+            if (!$id) {
+                header('Location: index.php?page=buku');
+                exit;
+            }
 
-    public function delete(): void
-    {
-        $id = (int) ($_POST['id'] ?? 0);
-        $this->model->delete($id);
-        header('Location: index.php?page=buku');
-        exit;
-    }
+            if (empty($_POST['isbn']) || empty($_POST['judul']) || empty($_POST['penulis']) || empty($_POST['penerbit']) || empty($_POST['tahun_terbit'])) {
+                exit('Semua field wajib diisi!');
+            }
 
-    private function validateInput(array $input): array
-    {
-        $data = [
-            'isbn'         => trim($input['isbn'] ?? ''),
-            'judul'        => trim($input['judul'] ?? ''),
-            'penulis'      => trim($input['penulis'] ?? ''),
-            'penerbit'     => trim($input['penerbit'] ?? ''),
-            'tahun_terbit' => (int) ($input['tahun_terbit'] ?? 0)
-        ];
+            $data = [
+                'isbn'         => $_POST['isbn'],
+                'judul'        => $_POST['judul'],
+                'penulis'      => $_POST['penulis'],
+                'penerbit'     => $_POST['penerbit'],
+                'tahun_terbit' => $_POST['tahun_terbit']
+            ];
 
-        if ($data['isbn'] === '' || $data['judul'] === '' || $data['penulis'] === '' || $data['penerbit'] === '' || $data['tahun_terbit'] <= 0) {
-            exit('Semua field wajib diisi dengan benar.');
+            $this->model->update($id, $data);
+            header('Location: index.php?page=buku');
+            exit;
         }
+    }
 
-        return $data;
+    // Delete
+    public function delete() {
+        $id = $_GET['id'] ?? null;
+        if ($id) {
+            $this->model->delete($id);
+        }
+        header('Location: index.php?page=buku');
+        exit;
     }
 }

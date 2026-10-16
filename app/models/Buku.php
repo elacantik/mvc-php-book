@@ -1,30 +1,30 @@
 <?php
-class Buku
-{
-    public function __construct(private PDO $db) {}
+class Buku {
+    private $db;
 
-    public function getAll(): array
-    {
-        $stmt = $this->db->query(
-            'SELECT id, isbn, judul, penulis, penerbit, tahun_terbit FROM buku ORDER BY judul ASC'
-        );
-        return $stmt->fetchAll();
+    public function __construct($db) {
+        $this->db = $db;
     }
 
-    public function findById(int $id): array|false
-    {
-        $stmt = $this->db->prepare(
-            'SELECT id, isbn, judul, penulis, penerbit, tahun_terbit FROM buku WHERE id = :id'
-        );
-        $stmt->execute(['id' => $id]);
-        return $stmt->fetch();
+    // Read: Mengambil semua data buku
+    public function getAll() {
+        $stmt = $this->db->prepare("SELECT * FROM buku ORDER BY id DESC");
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function insert(array $data): bool
-    {
-        $sql = 'INSERT INTO buku (isbn, judul, penulis, penerbit, tahun_terbit) 
-                VALUES (:isbn, :judul, :penulis, :penerbit, :tahun_terbit)';
-        $stmt = $this->db->prepare($sql);
+    // Read by ID: Mengambil 1 data buku untuk form Edit
+    public function getById($id) {
+        $stmt = $this->db->prepare("SELECT * FROM buku WHERE id = :id");
+        $stmt->execute([':id' => $id]);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    // Create: Menambahkan data buku baru
+    public function create($data) {
+        $query = "INSERT INTO buku (isbn, judul, penulis, penerbit, tahun_terbit) 
+                  VALUES (:isbn, :judul, :penulis, :penerbit, :tahun_terbit)";
+        $stmt = $this->db->prepare($query);
         return $stmt->execute([
             ':isbn'         => $data['isbn'],
             ':judul'        => $data['judul'],
@@ -34,14 +34,18 @@ class Buku
         ]);
     }
 
-    public function update(int $id, array $data): bool
-    {
-        $sql = 'UPDATE buku 
-                SET isbn = :isbn, judul = :judul, penulis = :penulis, penerbit = :penerbit, tahun_terbit = :tahun_terbit 
-                WHERE id = :id';
-        $stmt = $this->db->prepare($sql);
+    // Update: Memperbarui data buku
+    public function update($id, $data) {
+        $query = "UPDATE buku SET 
+                    isbn = :isbn, 
+                    judul = :judul, 
+                    penulis = :penulis, 
+                    penerbit = :penerbit, 
+                    tahun_terbit = :tahun_terbit 
+                  WHERE id = :id";
+        $stmt = $this->db->prepare($query);
         return $stmt->execute([
-            'id'            => $id,
+            ':id'           => $id,
             ':isbn'         => $data['isbn'],
             ':judul'        => $data['judul'],
             ':penulis'      => $data['penulis'],
@@ -50,9 +54,9 @@ class Buku
         ]);
     }
 
-    public function delete(int $id): bool
-    {
-        $stmt = $this->db->prepare('DELETE FROM buku WHERE id = :id');
-        return $stmt->execute(['id' => $id]);
+    // Delete: Menghapus data buku
+    public function delete($id) {
+        $stmt = $this->db->prepare("DELETE FROM buku WHERE id = :id");
+        return $stmt->execute([':id' => $id]);
     }
 }

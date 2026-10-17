@@ -6,18 +6,18 @@ class BukuController {
         $this->model = $model;
     }
 
-    // Read: Menampilkan daftar buku
+    
     public function index() {
         $books = $this->model->getAll();
         require __DIR__ . '/../views/buku/index.php';
     }
 
-    // Form Tambah
+    
     public function create() {
         require __DIR__ . '/../views/buku/create.php';
     }
 
-    // Create & Validasi Backend
+    
     public function store() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Validasi backend: pastikan field tidak kosong
@@ -39,7 +39,7 @@ class BukuController {
         }
     }
 
-    // Form Edit
+    
     public function edit() {
         $id = $_GET['id'] ?? null;
         if (!$id) {
@@ -50,7 +50,7 @@ class BukuController {
         require __DIR__ . '/../views/buku/edit.php';
     }
 
-    // Update & Validasi Backend
+   
     public function update() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $id = $_POST['id'] ?? null;
@@ -77,7 +77,7 @@ class BukuController {
         }
     }
 
-    // Delete
+   
     public function delete() {
         $id = $_GET['id'] ?? null;
         if ($id) {

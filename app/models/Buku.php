@@ -60,3 +60,5 @@ class Buku {
         return $stmt->execute([':id' => $id]);
     }
 }
+
+
